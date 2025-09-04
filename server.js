@@ -1,5 +1,4 @@
 // server.js
-// ⚡ Render-ready MERN backend setup
 
 // ----------------------
 // 1️⃣ Load env & fix DEBUG_URL
@@ -7,9 +6,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-// Prevent Render from breaking path-to-regexp
-if (process.env.DEBUG_URL) delete process.env.DEBUG_URL;
-process.env.DEBUG_URL = "";
+
 
 // ----------------------
 // 2️⃣ Core imports
@@ -39,7 +36,12 @@ import { notFound, errorHandler } from "./middleware/error.js";
 // ----------------------
 const app = express();
 app.use(express.json({ limit: "1mb" }));
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+
+// Safe CORS setup
+const clientOrigin = process.env.CLIENT_ORIGIN || "*";
+console.log("CLIENT_ORIGIN is:", clientOrigin);
+app.use(cors({ origin: clientOrigin, credentials: true }));
+
 app.use(helmet());
 app.use(morgan("dev"));
 
@@ -61,12 +63,12 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 // ----------------------
 // 5️⃣ Serve React frontend in production
 // ----------------------
-const __dirname = path.resolve();
+
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
-  app.get("*", (req, res) =>
-    res.sendFile(path.join(__dirname, "../client/build", "index.html"))
-  );
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  });
 }
 
 // ----------------------
@@ -79,6 +81,13 @@ app.use(errorHandler);
 // 7️⃣ Connect DB & start server
 // ----------------------
 const PORT = process.env.PORT || 5000;
+
+if(process.env.NODE_ENV==="production"){
+  app.use(express.static(path.join(__dirname,"client/build")))
+  app.get("*",(req,res)=>{
+    res.sendFile(path.join(__dirname,"client/build/index.html"))
+  })
+}
 
 connectDB(process.env.MONGO_URI)
   .then(() => {
