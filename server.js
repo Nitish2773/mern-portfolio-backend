@@ -1,19 +1,27 @@
-import express from "express";
-import dotenv from "dotenv";
+// server.js
+// ⚡ Render-ready MERN backend setup
 
+// ----------------------
+// 1️⃣ Load env & fix DEBUG_URL
+// ----------------------
+import dotenv from "dotenv";
 dotenv.config();
+
 // Prevent Render from breaking path-to-regexp
-delete process.env.DEBUG_URL;
+if (process.env.DEBUG_URL) delete process.env.DEBUG_URL;
 process.env.DEBUG_URL = "";
 
-
+// ----------------------
+// 2️⃣ Core imports
+// ----------------------
+import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import { connectDB } from "./config/db.js";
 
-// Import routes
+// Routes
 import educationRoutes from "./routes/educationRoutes.js";
 import experienceRoutes from "./routes/experienceRoutes.js";
 import skillRoutes from "./routes/skillRoutes.js";
@@ -26,13 +34,18 @@ import authRoutes from "./routes/authRoutes.js";
 // Error middleware
 import { notFound, errorHandler } from "./middleware/error.js";
 
+// ----------------------
+// 3️⃣ Initialize app & middleware
+// ----------------------
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
 app.use(helmet());
 app.use(morgan("dev"));
 
-// API routes
+// ----------------------
+// 4️⃣ API routes
+// ----------------------
 app.use("/api/profile", profileRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/experience", experienceRoutes);
@@ -42,7 +55,12 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", authRoutes);
 
-// Serve React frontend in production
+// Health check
+app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+// ----------------------
+// 5️⃣ Serve React frontend in production
+// ----------------------
 const __dirname = path.resolve();
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
@@ -51,15 +69,23 @@ if (process.env.NODE_ENV === "production") {
   );
 }
 
-// Error handling
+// ----------------------
+// 6️⃣ Error handling middleware
+// ----------------------
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
+// ----------------------
+// 7️⃣ Connect DB & start server
+// ----------------------
 const PORT = process.env.PORT || 5000;
+
 connectDB(process.env.MONGO_URI)
   .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    // small timeout to avoid env race on Render
+    setTimeout(() => {
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    }, 100);
   })
   .catch((err) => {
     console.error("Failed to connect to DB:", err);
