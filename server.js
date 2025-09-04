@@ -2,7 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
-delete process.env.DEBUG_URL; // ⚡ prevent Render path-to-regexp error
+// Prevent Render from breaking path-to-regexp
+delete process.env.DEBUG_URL;
+process.env.DEBUG_URL = "";
+
 
 import cors from "cors";
 import helmet from "helmet";
