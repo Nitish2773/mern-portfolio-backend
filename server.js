@@ -1,12 +1,10 @@
 // server.js
 
 // ----------------------
-// 1️⃣ Load env & fix DEBUG_URL
+// 1️⃣ Load env
 // ----------------------
 import dotenv from "dotenv";
 dotenv.config();
-
-
 
 // ----------------------
 // 2️⃣ Core imports
@@ -16,6 +14,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
 
 // Routes
@@ -32,7 +31,13 @@ import authRoutes from "./routes/authRoutes.js";
 import { notFound, errorHandler } from "./middleware/error.js";
 
 // ----------------------
-// 3️⃣ Initialize app & middleware
+// 3️⃣ ES module __dirname fix
+// ----------------------
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ----------------------
+// 4️⃣ Initialize app & middleware
 // ----------------------
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -46,7 +51,7 @@ app.use(helmet());
 app.use(morgan("dev"));
 
 // ----------------------
-// 4️⃣ API routes
+// 5️⃣ API routes
 // ----------------------
 app.use("/api/profile", profileRoutes);
 app.use("/api/education", educationRoutes);
@@ -61,37 +66,30 @@ app.use("/api/admin", authRoutes);
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 // ----------------------
-// 5️⃣ Serve React frontend in production
+// 6️⃣ Serve React frontend in production
 // ----------------------
-
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/build")));
+  const buildPath = path.join(__dirname, "../client/build");
+  app.use(express.static(buildPath));
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+    res.sendFile(path.join(buildPath, "index.html"));
   });
 }
 
 // ----------------------
-// 6️⃣ Error handling middleware
+// 7️⃣ Error handling middleware
 // ----------------------
 app.use(notFound);
 app.use(errorHandler);
 
 // ----------------------
-// 7️⃣ Connect DB & start server
+// 8️⃣ Connect DB & start server
 // ----------------------
 const PORT = process.env.PORT || 5000;
 
-if(process.env.NODE_ENV==="production"){
-  app.use(express.static(path.join(__dirname,"client/build")))
-  app.get("*",(req,res)=>{
-    res.sendFile(path.join(__dirname,"client/build/index.html"))
-  })
-}
-
 connectDB(process.env.MONGO_URI)
   .then(() => {
-    // small timeout to avoid env race on Render
+    // Small timeout to avoid env race on Render
     setTimeout(() => {
       app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     }, 100);
