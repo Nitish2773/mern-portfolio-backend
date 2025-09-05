@@ -7,20 +7,23 @@
   "type": "module",
   "main": "server.js",
   "engines": {
-    "node": "v22.17.0",
-    "npm": "11.4.2"
+    "node": "22.x",
+    "npm": "11.x"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
+    "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
     "morgan": "^1.10.1",
-    "nodemailer": "^7.0.5",
-    "nodemon": "^3.1.10"
+    "nodemailer": "^7.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "concurrently": "^8.2.2"
   },
   "scripts": {
     "client-install": "cd client && npm install",
@@ -28,6 +31,6 @@
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "start": "node server.js",
-    "heroku-postbuild": "npm run client-install && cd client && npm run build"
+    "build": "npm run client-install && cd client && npm run build"
   }
 }
