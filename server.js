@@ -79,7 +79,7 @@ if (process.env.NODE_ENV === "production") {
 // ----------------------
 // 7️⃣ Error handling middleware
 // ----------------------
-app.use(notFound);
+app.use("/*splat", notFound);
 app.use(errorHandler);
 
 // ----------------------
