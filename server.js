@@ -1,3 +1,5 @@
+// server.js
+
 // ----------------------
 // 1️⃣ Load env
 // ----------------------
@@ -40,9 +42,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-// ----------------------
-// 4a️⃣ Safe CORS setup
-// ----------------------
+// Safe CORS setup
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN, // main frontend
   // Add more origins here if needed
@@ -61,9 +61,6 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ----------------------
-// 4b️⃣ Security & logging
-// ----------------------
 app.use(helmet());
 app.use(morgan("dev"));
 
@@ -88,9 +85,7 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 if (process.env.NODE_ENV === "production") {
   const buildPath = path.join(__dirname, "../client/build");
   app.use(express.static(buildPath));
-
-  // Catch-all for React Router
-  app.get("/*", (req, res) => {
+  app.get("/*splat", (req, res) => {
     res.sendFile(path.join(buildPath, "index.html"));
   });
 }
@@ -98,7 +93,7 @@ if (process.env.NODE_ENV === "production") {
 // ----------------------
 // 7️⃣ Error handling middleware
 // ----------------------
-app.use(notFound);
+app.use("/*splat", notFound);
 app.use(errorHandler);
 
 // ----------------------
