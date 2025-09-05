@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export const SKILL_CATEGORIES = ["web-dev", "database", "frameworks", "libraries","tools","Other" ];
+export const SKILL_CATEGORIES = ["Programming","Web Dev", "Database", "Frameworks", "Libraries","Tools","Others" ];
 
 const skillSchema = new mongoose.Schema({
   name: { type: String, required: true },      // "React", "AWS S3"
