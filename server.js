@@ -48,18 +48,20 @@ const allowedOrigins = [
   // Add more origins here if needed
 ];
 
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests from tools like Postman / server-side (no origin)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests from tools like Postman / server-side (no origin)
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
 
-    return callback(new Error("CORS policy: Origin not allowed"), false);
-  },
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+      return callback(new Error("CORS policy: Origin not allowed"), false);
+    },
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(helmet());
 app.use(morgan("dev"));
