@@ -1,5 +1,3 @@
-// server.js
-
 // ----------------------
 // 1️⃣ Load env
 // ----------------------
@@ -42,11 +40,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-// Safe CORS setup
-const clientOrigin = process.env.CLIENT_ORIGIN || "*";
-console.log("CLIENT_ORIGIN is:", clientOrigin);
-app.use(cors({ origin: clientOrigin, credentials: true }));
+// ----------------------
+// 4a️⃣ Safe CORS setup
+// ----------------------
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN, // main frontend
+  // Add more origins here if needed
+];
 
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests from tools like Postman / server-side (no origin)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    return callback(new Error("CORS policy: Origin not allowed"), false);
+  },
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// ----------------------
+// 4b️⃣ Security & logging
+// ----------------------
 app.use(helmet());
 app.use(morgan("dev"));
 
@@ -71,7 +88,9 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 if (process.env.NODE_ENV === "production") {
   const buildPath = path.join(__dirname, "../client/build");
   app.use(express.static(buildPath));
-  app.get("/*splat", (req, res) => {
+
+  // Catch-all for React Router
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(buildPath, "index.html"));
   });
 }
@@ -79,7 +98,7 @@ if (process.env.NODE_ENV === "production") {
 // ----------------------
 // 7️⃣ Error handling middleware
 // ----------------------
-app.use("/*splat", notFound);
+app.use(notFound);
 app.use(errorHandler);
 
 // ----------------------
